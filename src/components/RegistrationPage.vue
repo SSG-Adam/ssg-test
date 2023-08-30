@@ -1,6 +1,6 @@
 <template>
     <section class="signup-container">
-        <form class="signup-form-container" autocomplete="off">
+        <form class="signup-form-container" autocomplete="off" :class="{ 'dark-mode': isDarkMode }">
             <h1>Sign Up</h1>
             <div class="form-item">
                 <label for="name">Name:</label>
@@ -42,13 +42,18 @@
                 <button type="submit" @click.prevent="register()">Submit</button>
                 <button type="submit" @click.prevent="login()">Login Instead?</button>
             </div>
+            <p v-if="errorMessage" class="errorMsg">{{ errorMessage }}</p>
         </form>
     </section>
 </template>
 
 <script lang="ts">
 import router from '@/router';
+import { useStore } from '@/store';
 import axios from 'axios';
+
+// const VITE_API_LINK = import.meta.env.VITE_API_LINK;
+const VITE_API_LINK = import.meta.env.VITE_API_LINK
 
 export default {
     data() {
@@ -56,26 +61,32 @@ export default {
             name: "",
             email: "",
             password: "",
-            cPassword: ""
+            cPassword: "",
+            errorMessage: "",
+            isDarkMode: window.matchMedia('(prefers-color-scheme: dark)').matches
         }
     },
     methods: {
         async register() {
             if((this.password === this.cPassword) !== null || ""){
                 try {
-                let result = await axios.post("https://nestjs-dev.deploy.nl/auth/register", {
+                let result = await axios.post(`${VITE_API_LINK}/auth/register`, {
                     name: this.name,
                     email: this.email,
                     password: this.password
                 });
+                console.log('test', result)
                 if(result.status == 201) {
                     alert('You have created a new account!');
                     this.$router.push({ name: 'Home' })
                 } else {
                     console.log('Registration failed, check', this.name, this.email, this.password, this.cPassword);
                 }
-            } catch (e) {
+            } catch (e: any) {
                 console.dir(e)
+                const errorMsg = e.response.data.message[0]
+                console.log(errorMsg,"show me this")
+                this.errorMessage = errorMsg;
             }
             } else {
                 console.error(`Your ${this.password} and ${this.cPassword} are not the same!`);
@@ -83,6 +94,14 @@ export default {
         },
         async login() {
             await router.push({ name: 'Login' })
+        }
+    },
+    beforeRouteEnter(to, from, next) {
+        const authStore = useStore();
+        if(authStore.accessToken) {
+            next({ name: 'ListsPage' });
+        } else {
+            next();
         }
     }
 }
@@ -96,6 +115,20 @@ export default {
     .signup-form-container {
         padding: 10px;
         margin: auto;
+        &.dark-mode {
+            color: white;
+            background-color: white;
+            h1, label {
+                color: black;
+            }
+            .errorMsg {
+                color: red;
+                font-size: 12px;
+                display: flex;
+                justify-content: center;
+                padding-top: 10px;
+            }
+        }
         .form-item {
             display: flex;
             justify-content: space-between;

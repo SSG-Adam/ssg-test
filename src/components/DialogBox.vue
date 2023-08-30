@@ -1,22 +1,22 @@
 <template>
-    <div class="dialogBox">
+    <div class="dialogBox" :class="{ 'dark-mode': isDarkMode }">
         <button @click="isOpen = true">+ New List</button>
-    </div>
-    <teleport to="body">
-        <div class="modal" v-if="isOpen">
-            <div class="newlist-container">
-                <div class="newList-heading">
-                    <h3>New List</h3>
-                    <button @click="closeDialog">X</button>
+        <teleport to="body">
+            <div class="modal" v-if="isOpen">
+                <div class="newlist-container">
+                    <div class="newList-heading">
+                        <h3>New List</h3>
+                        <button @click="closeDialog">X</button>
+                    </div>
+                    <div class="newList-input">
+                        <p>List name</p>
+                        <input v-model="inputText" />
+                    </div>
+                    <button @click="createLists" class="add-btn">Add</button>
                 </div>
-                <div class="newList-input">
-                    <p>List name</p>
-                    <input v-model="inputText" />
-                </div>
-                <button @click="createLists" class="add-btn">Add</button>
             </div>
-        </div>
-    </teleport>
+        </teleport>
+    </div>
 </template>
 
 <script lang="ts">
@@ -24,6 +24,11 @@ import { useStore } from '@/store';
 import { ref } from 'vue'
 export default {
     name: 'DialogBox',
+    data(){
+        return {
+            isDarkMode: window.matchMedia('(prefers-color-scheme: dark)').matches
+        }
+    },
     setup() {
         const isOpen = ref(false);
         const store = useStore();
@@ -37,7 +42,7 @@ export default {
             try {
                 await useStore().createList({ name: inputText.value, list_items: [] });
                 closeDialog();
-                location.reload();
+                // location.reload();
             } catch (error) {
                 console.log(error);
             }
@@ -79,8 +84,10 @@ export default {
     .newlist-container {
         position: relative;
         background-color: lightgray;
+        color: black;
         border: 1px solid rgba(25, 25, 25, 0.5);
         padding: 20px;
+
         .newList-heading {
             display: flex;
             justify-content: space-between;

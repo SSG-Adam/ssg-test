@@ -1,6 +1,6 @@
 <template>
     <button class="logout-btn" @click="logout">Logout</button>
-    <section id="lists-page-body">
+    <section id="lists-page-body" :class="{ 'dark-mode': isDarkMode }">
         <div class="top-row">
             <div class="left-side">
                 <h1>Lists</h1>
@@ -62,21 +62,26 @@
 <script lang="ts">
 import { useStore } from '@/store';
 import { onMounted, ref, watch } from 'vue';
-import { useAuthStore } from '@/stores/loginState';
+// import { useAuthStore } from '@/stores/loginState';
 import axios from 'axios';
 import { storeToRefs } from 'pinia'
 import DialogBox from './DialogBox.vue';
 import DropDown from './DropDown.vue';
 import router from '@/router';
 
-
+const VITE_API_LINK = import.meta.env.VITE_API_LINK
 export default {
     name: 'Lists',
+    data() {
+        return {
+            isDarkMode: window.matchMedia('(prefers-color-scheme: dark)').matches
+        }
+    },
     setup() {
         const store = useStore();
         const newItemText = ref('');
         const selectedListIndex = ref(0);
-        const authStore = useAuthStore();
+        const authStore = useStore();
         const { lists, accessToken } = storeToRefs(store);
 
         const optionsObj = {
@@ -105,7 +110,7 @@ export default {
         //retrieve list data
         const getLists = async () => {
             try {
-                const response = await axios.get('https://nestjs-dev.deploy.nl/List', {
+                const response = await axios.get(`${VITE_API_LINK}/List`, {
                     headers: {
                         'Authorization': `Bearer ${accessToken.value}`
                     }
@@ -148,7 +153,7 @@ export default {
 
         const logout = () => {
             try {
-                const authStore = useAuthStore();
+                const authStore = useStore();
 
                 // Clear the access token from the auth store
                 authStore.setAccessToken('');
@@ -170,22 +175,50 @@ export default {
         }
 
         return {
-        lists,
-        newItemText,
-        addItem,
-        deleteItem,
-        deleteList,
-        accessToken,
-        selectedListIndex,
-        optionsObj,
-        logout
-    };
-},
-components: { DialogBox, DropDown }
+            lists,
+            newItemText,
+            addItem,
+            deleteItem,
+            deleteList,
+            accessToken,
+            selectedListIndex,
+            optionsObj,
+            logout
+        };
+    },
+    components: { DialogBox, DropDown }
 }
 </script>
 
 <style scoped lang="scss">
+#lists-page-body {
+    &.dark-mode {
+        .top-row {
+
+            .left-side,
+            .right-side {
+                h1 {
+                    color: black;
+                }
+            }
+        }
+
+        .Main_List_Names {
+
+            h1,
+            .single-list {
+                color: black;
+            }
+
+            .right-col {
+                ul {
+                    color: black;
+                }
+            }
+        }
+    }
+}
+
 .logout-btn {
     display: flex;
     margin-left: auto;
@@ -214,8 +247,7 @@ components: { DialogBox, DropDown }
 
     .left-side {
         .newListBtn {
-            padding-left: 20px;
-            cursor: pointer;
+            margin-left: 20px;
         }
     }
 
@@ -287,5 +319,4 @@ components: { DialogBox, DropDown }
             }
         }
     }
-}
-</style>
+}</style>

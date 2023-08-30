@@ -1,4 +1,6 @@
-import { type Router,createWebHistory, createRouter } from "vue-router";
+import { createWebHistory, createRouter } from "vue-router";
+import { useStore } from "@/store";
+
 const routes  = [
     {
         path: "/login",
@@ -11,16 +13,26 @@ const routes  = [
         component: () => import('../components/RegistrationPage.vue')
     },
     {
-        path: "/lists-page",
+        path: "/",
         name: 'ListsPage',
-        component: () => import('../components/ListsPage.vue')
+        component: () => import('../components/ListsPage.vue'),
+        meta: { requiresAuth: true }
     }
 ]
 
-const router:Router = createRouter({
+const router = createRouter({
     history: createWebHistory(),
     routes: routes,
     linkActiveClass: 'active'
+});
+
+router.beforeEach((to, from, next) =>{
+    const authStore = useStore();
+    if(to.meta.requiresAuth && !authStore.accessToken) {
+        next({ name: 'Login' });
+    } else {
+        next();
+    }
 });
 
 export default router;
