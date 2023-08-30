@@ -161,9 +161,6 @@ export default {
                 // Remove the access token from sessionStorage
                 sessionStorage.removeItem('accessToken');
 
-                // Remove the access token cookie
-                document.cookie = 'accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-
                 // Remove the Authorization header from Axios default headers
                 delete axios.defaults.headers.common['Authorization'];
 
